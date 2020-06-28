@@ -38,13 +38,18 @@ foreach ( $html->find( 'div.penci-archive__list_posts article h2 a' ) as $key=>$
 
 
 		$category_arr = [];
+		$category_string = [];
 
 		foreach ( $html->find( 'span.penci-cat-links a' ) as $tag ) {
 
 			$category = $tag->innerText();
 
 			$category_arr[] = [ $category ];
+			
+			array_push($category_string,$category);
 		}
+		
+		//echo category_string;
 
 		$content = '';
 		foreach ( $html->find( 'div.entry-content p' ) as $p ) {
@@ -55,28 +60,33 @@ foreach ( $html->find( 'div.penci-archive__list_posts article h2 a' ) as $key=>$
 		$arrayname[] = [
 			'name'          => $name,
 			'category'      => $category_arr,
+			'category_string' => $category_string,
 			'featuredImage' => $img_url,
 			'contents'      => $content
 		];
 	}
 
-	if ($key == 1){
-		break;
-	}
+//	if ($key == 1){
+//		break;
+//	}
 }
 
-//        echo json_encode($arrayname, JSON_UNESCAPED_UNICODE );
+
+        //echo json_encode($arrayname, JSON_UNESCAPED_UNICODE );
+
 
 foreach ( $arrayname as $key => $value ) {
 	$post_title = $value['name'];
 	$post_contents = $value['contents'];
 	$post_featured_image = $value['featuredImage'];
 	$post_categories = $value['category'];
+	
+	$category_string = $value['category_string'];
 
 	$newpost_cat_arr = getPostCategory($post_categories);
 
 
-	postWp( $post_title, $newpost_cat_arr, $post_featured_image, $post_contents );
+	postWp( $post_title, $newpost_cat_arr, $post_featured_image, $post_contents, $category_string );
 }
 
 
@@ -109,7 +119,7 @@ function getPostCategory($post_categories){
 
 
 
-function postWp( $post_title, $newpost_cat_arr, $post_featured_image, $post_contents ) {
+function postWp( $post_title, $newpost_cat_arr, $post_featured_image, $post_contents, $category_string ) {
 
 	$postType   = 'post'; // set to post or page
 	$userID     = 1; // set to user id
@@ -131,6 +141,8 @@ function postWp( $post_title, $newpost_cat_arr, $post_featured_image, $post_cont
 	$minuteCounter = $minuteCounter + $adjustClockMinutes; // adjusting for server timezone
 	$timeStamp     = date( 'Y-m-d H:i:s', strtotime( "+$minuteCounter min" ) ); // format needed for WordPress
 
+	//$cat_arr = implode(', ', $category_string);
+
 	$new_post = array(
 		'post_title'    => $leadTitle,
 		'post_content'  => $leadContent,
@@ -139,7 +151,7 @@ function postWp( $post_title, $newpost_cat_arr, $post_featured_image, $post_cont
 		'post_author'   => $userID,
 		'post_type'     => $postType,
 		'post_category' => $newpost_cat_arr,
-		'tags_input'    => $newpost_cat_arr
+		'tags_input'    => $category_string
 //		'tags_input'    => array( 'tag,tag1,tag2' )
 	);
 
@@ -149,6 +161,11 @@ function postWp( $post_title, $newpost_cat_arr, $post_featured_image, $post_cont
 	$finaltext = '';
 
 	if ( $post_id ) {
+		
+		//wp_set_object_terms($post_id , $newpost_cat_arr, null, false);
+		
+		//wp_set_post_terms( $post_id, $category_string, 'post_tag', false );
+
 
 		$finaltext .= 'Yay, I made a new post.<br>';
 
