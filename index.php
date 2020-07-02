@@ -26,7 +26,7 @@ include( 'simple_html_dom.php' );
 for ($x = 16; $x <= 18; $x++) {
 	$html = new simple_html_dom();
 	$html->load_file( 'https://tamilayurvedic.com/category/%e0%ae%ae%e0%ae%b0%e0%af%81%e0%ae%a4%e0%af%8d%e0%ae%a4%e0%af%81%e0%ae%b5-%e0%ae%95%e0%ae%9f%e0%af%8d%e0%ae%9f%e0%af%81%e0%ae%b0%e0%af%88%e0%ae%95%e0%ae%b3%e0%af%8d/page/'.$x);
-	echo $x . "<br>";
+	echo "<br>" . $x . "<br>";
 	$arrayname = [];
 
 	foreach ( $html->find( 'div.penci-archive__list_posts article h2 a' ) as $key=>$link ) {
