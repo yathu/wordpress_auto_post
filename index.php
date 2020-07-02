@@ -1,4 +1,8 @@
 <?php
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
+
 set_time_limit(600000);
 require_once( "../wp-load.php" );
 
@@ -19,7 +23,7 @@ and open the template in the editor.
 <?php
 include( 'simple_html_dom.php' );
 
-for ($x = 15; $x <= 15; $x++) {
+for ($x = 16; $x <= 18; $x++) {
 	$html = new simple_html_dom();
 	$html->load_file( 'https://tamilayurvedic.com/category/%e0%ae%ae%e0%ae%b0%e0%af%81%e0%ae%a4%e0%af%8d%e0%ae%a4%e0%af%81%e0%ae%b5-%e0%ae%95%e0%ae%9f%e0%af%8d%e0%ae%9f%e0%af%81%e0%ae%b0%e0%af%88%e0%ae%95%e0%ae%b3%e0%af%8d/page/'.$x);
 	echo $x . "<br>";
@@ -89,6 +93,7 @@ for ($x = 15; $x <= 15; $x++) {
 		postWp( $post_title, $newpost_cat_arr, $post_featured_image, $post_contents, $category_string );
 	}
 
+	sleep(3);
 
 }
 
