@@ -1,4 +1,5 @@
 <?php
+set_time_limit(600000);
 require_once( "../wp-load.php" );
 
 header( "content-type: text/html; charset=UTF-8" );
@@ -18,106 +19,105 @@ and open the template in the editor.
 <?php
 include( 'simple_html_dom.php' );
 
-$html = new simple_html_dom();
-$html->load_file( 'https://tamilayurvedic.com/category/%e0%ae%85%e0%ae%b4%e0%ae%95%e0%af%81/%e0%ae%aa%e0%af%86%e0%ae%a3%e0%af%8d%e0%ae%95%e0%ae%b3%e0%af%8d-%e0%ae%ae%e0%ae%b0%e0%af%81%e0%ae%a4%e0%af%8d%e0%ae%a4%e0%af%81%e0%ae%b5%e0%ae%ae%e0%af%8d' );
+for ($x = 15; $x <= 15; $x++) {
+	$html = new simple_html_dom();
+	$html->load_file( 'https://tamilayurvedic.com/category/%e0%ae%ae%e0%ae%b0%e0%af%81%e0%ae%a4%e0%af%8d%e0%ae%a4%e0%af%81%e0%ae%b5-%e0%ae%95%e0%ae%9f%e0%af%8d%e0%ae%9f%e0%af%81%e0%ae%b0%e0%af%88%e0%ae%95%e0%ae%b3%e0%af%8d/page/'.$x);
+	echo $x . "<br>";
+	$arrayname = [];
 
-$arrayname = [];
+	foreach ( $html->find( 'div.penci-archive__list_posts article h2 a' ) as $key=>$link ) {
+		if ( isset( $link ) ) {
 
-foreach ( $html->find( 'div.penci-archive__list_posts article h2 a' ) as $key=>$link ) {
-	if ( isset( $link ) ) {
+			$html->load_file( $link->href );
 
-		$html->load_file( $link->href );
+			foreach ( $html->find( 'h1.entry-title' ) as $title ) {
+				$name = $title->innerText();
+			}
 
-		foreach ( $html->find( 'h1.entry-title' ) as $title ) {
-			$name = $title->innerText();
+			foreach ( $html->find( 'div.post-image img' ) as $img ) {
+				$img_url = $img->src;
+			}
+
+
+			$category_arr = [];
+			$category_string = [];
+
+			foreach ( $html->find( 'span.penci-cat-links a' ) as $tag ) {
+
+				$category = $tag->innerText();
+
+				$category_arr[] = [ $category ];
+
+				array_push($category_string,$category);
+			}
+
+			//echo category_string;
+
+			$content = '';
+			foreach ( $html->find( 'div.entry-content p' ) as $p ) {
+				$content .= '<p>' . $p->innerText() . '</p>';
+			}
+
+
+			$arrayname[] = [
+				'name'          => $name,
+				'category'      => $category_arr,
+				'category_string' => $category_string,
+				'featuredImage' => $img_url,
+				'contents'      => $content
+			];
 		}
-
-		foreach ( $html->find( 'div.post-image img' ) as $img ) {
-			$img_url = $img->src;
-		}
-
-
-		$category_arr = [];
-		$category_string = [];
-
-		foreach ( $html->find( 'span.penci-cat-links a' ) as $tag ) {
-
-			$category = $tag->innerText();
-
-			$category_arr[] = [ $category ];
-			
-			array_push($category_string,$category);
-		}
-		
-		//echo category_string;
-
-		$content = '';
-		foreach ( $html->find( 'div.entry-content p' ) as $p ) {
-			$content .= '<p>' . $p->innerText() . '</p>';
-		}
-
-
-		$arrayname[] = [
-			'name'          => $name,
-			'category'      => $category_arr,
-			'category_string' => $category_string,
-			'featuredImage' => $img_url,
-			'contents'      => $content
-		];
-	}
 
 //	if ($key == 1){
 //		break;
 //	}
+	}
+
+	//echo json_encode($arrayname, JSON_UNESCAPED_UNICODE );
+
+	foreach ( $arrayname as $key => $value ) {
+		$post_title = $value['name'];
+		$post_contents = $value['contents'];
+		$post_featured_image = $value['featuredImage'];
+		$post_categories = $value['category'];
+
+		$category_string = $value['category_string'];
+
+		$newpost_cat_arr = getPostCategory($post_categories);
+
+
+		postWp( $post_title, $newpost_cat_arr, $post_featured_image, $post_contents, $category_string );
+	}
+
+
 }
-
-
-        //echo json_encode($arrayname, JSON_UNESCAPED_UNICODE );
-
-
-foreach ( $arrayname as $key => $value ) {
-	$post_title = $value['name'];
-	$post_contents = $value['contents'];
-	$post_featured_image = $value['featuredImage'];
-	$post_categories = $value['category'];
-	
-	$category_string = $value['category_string'];
-
-	$newpost_cat_arr = getPostCategory($post_categories);
-
-
-	postWp( $post_title, $newpost_cat_arr, $post_featured_image, $post_contents, $category_string );
-}
-
 
 //check is category is there else create and get id
 function getPostCategory($post_categories){
 
-    $newpost_cat_arr = [];
+	$newpost_cat_arr = [];
 
 	foreach ($post_categories as $categorys){
 
-	    foreach ($categorys as $category){
+		foreach ($categorys as $category){
 
-            $cat_id = get_cat_ID($category);
+			$cat_id = get_cat_ID($category);
 
-            if ($cat_id != 0 ){
-                $newpost_cat_arr[] = $cat_id;
-            } else{
+			if ($cat_id != 0 ){
+				$newpost_cat_arr[] = $cat_id;
+			} else{
 
-                $insertCategory = wp_insert_term($category, 'category', array());
+				$insertCategory = wp_insert_term($category, 'category', array());
 
-                $newpost_cat_arr[] = $insertCategory['term_id'];
+				$newpost_cat_arr[] = $insertCategory['term_id'];
 
-            }
+			}
 
-        }
+		}
 	}
 
 	return $newpost_cat_arr;
 }
-
-
 
 function postWp( $post_title, $newpost_cat_arr, $post_featured_image, $post_contents, $category_string ) {
 
@@ -161,9 +161,9 @@ function postWp( $post_title, $newpost_cat_arr, $post_featured_image, $post_cont
 	$finaltext = '';
 
 	if ( $post_id ) {
-		
+
 		//wp_set_object_terms($post_id , $newpost_cat_arr, null, false);
-		
+
 		//wp_set_post_terms( $post_id, $category_string, 'post_tag', false );
 
 
@@ -219,7 +219,6 @@ function postWp( $post_title, $newpost_cat_arr, $post_featured_image, $post_cont
 	}
 	echo $finaltext;
 }
-
 ?>
 </body>
 </html>
